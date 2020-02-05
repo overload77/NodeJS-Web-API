@@ -1,11 +1,17 @@
 var express = require('express');
 var app = express();
-var helpers = require('./helpers.js');
 
 var Animal = require('./Animal.js');
 var Toy = require('./Toy.js');
+var helpers = require('./helpers.js');
 
 
+/**
+ * This API finds and returns the Toy in the “toys” collection
+ * with the ID that matches the id parameter.
+ * It returns the entire Toy document/object,
+ * including all properties that are stored in the database.
+ */
 app.use('/findToy', (req, res) => {
 
     var searchId = req.query.id;
@@ -22,6 +28,11 @@ app.use('/findToy', (req, res) => {
 });
 
 
+/**
+ * This API finds all Animals in the “animals” collection that have a species and gender that match
+ * the species and gender parameters, respectively,
+ * and for which one of the Animal’s traits matches the trait parameter.
+ */
 app.use('/findAnimals', (req, res) => {
     
     if (!req.query.species && !req.query.trait && !req.query.gender) {
@@ -65,6 +76,10 @@ app.use('/findAnimals', (req, res) => {
 });
 
 
+/**
+ * This API finds all Animals in the “animals” collection
+ * that have an age that is less than (but not equal to) the age parameter.
+ */
 app.use('/animalsYoungerThan', (req, res) => {
     
     if (!req.query.age || isNaN(req.query.age)) {
@@ -102,6 +117,10 @@ app.use('/animalsYoungerThan', (req, res) => {
 });
 
 
+/**
+ * This API calculates the total price of purchasing the specified quantities of the Toys
+ * with the corresponding IDs, using the Toys’ price from the database.
+ */
 app.use('/calculatePrice', (req, res) => {
 
     if (!req.query.id || !req.query.qty || (req.query.id.length != req.query.qty.length)) {
@@ -112,13 +131,12 @@ app.use('/calculatePrice', (req, res) => {
     var ids = req.query.id;
     var quantities = req.query.qty;
 
-    // Gonna use $in selector to find toys
+    // Using $in selector to find toys with given ids array
     var query = { id: { $in: ids } };
     var foundToys = [];
     var items = [];
     var totalPrice = 0.0;
     
-    // TODO: reanalyze hw6, starting documenting
     helpers.retrieveToys(query, (err, toys) => {
         if (err) {
             res.status(500);
@@ -127,52 +145,50 @@ app.use('/calculatePrice', (req, res) => {
             res.json({});
             return;
         } else {
-            foundToys = toys;
+            for (let i = 0; i < ids.length; i++) {
+                const id = ids[i];
+                const qty = quantities[i];
+        
+                if (isNaN(qty) || qty < 1) {
+                    continue;
+                }
+        
+                const toy = helpers.findToyInArrayWithID(foundToys, id);
+        
+                if (!toy) {
+                    continue;
+                }
+        
+                let subTotal = toy.price * qty;
+                let item = {
+                    item: toy.id,
+                    qty: qty,
+                    subtotal: subTotal
+                };
+                items.push(item);
+                totalPrice += subTotal;
+            }
+        
+            res.json({
+                totalPrice: totalPrice,
+                items: items
+            });
         }
-    });
-
-    for (let i = 0; i < ids.length; i++) {
-        const id = ids[i];
-        const qty = quantities[i];
-
-        if (isNaN(qty) || qty < 1) {
-            continue;
-        }
-
-        const toy = helpers.findToyInArrayWithID(foundToys, id);
-
-        if (!toy) {
-            continue;
-        }
-
-        let subTotal = toy.price * qty;
-        let item = {
-            item: toy.id,
-            qty: qty,
-            subtotal: subTotal
-        };
-        items.push(item);
-        totalPrice += subTotal;
-    }
-
-    res.json({
-        totalPrice: totalPrice,
-        items: items
     });
 
 });
 
 
+// Test case for default uri
 app.use('/', (req, res) => {
     res.json({ msg: 'It works!' });
 });
 
 
+// Server runs on port 3000
 app.listen(3000, () => {
     console.log('Listening on port 3000');
 });
 
 
-
-// Please do not delete the following line; we need it for testing!
 module.exports = app;

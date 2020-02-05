@@ -1,6 +1,7 @@
+/* ANIMAL MODULE DEFINITION MODULE */
+
 var mongoose = require('mongoose');
 
-// note: your host/port number may be different!
 mongoose.connect('mongodb://localhost:27017/myDatabase');
 
 var Schema = mongoose.Schema;
@@ -14,5 +15,5 @@ var animalSchema = new Schema({
 	age: Number
 });
 
-
+// Exposing animalSchema as Animal
 module.exports = mongoose.model('Animal', animalSchema);
