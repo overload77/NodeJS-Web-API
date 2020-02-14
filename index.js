@@ -18,7 +18,8 @@ app.use('/findToy', (req, res) => {
 
     Toy.findOne({ id: searchId }, (err, toy) => {
         if (err) {       
-            res.status(500);
+            res.type('html').status(500);
+            res.send("Error " + err);
         } else if (!toy) {
             res.json({});
         } else {
