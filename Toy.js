@@ -2,7 +2,8 @@
 
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost:27017/myDatabase');
+var mongoHostname = process.env.MONGO_HOSTNAME || 'localhost';
+mongoose.connect(`mongodb://root:example@${mongoHostname}:27017/myDatabase?authSource=admin`);
 
 var Schema = mongoose.Schema;
 
