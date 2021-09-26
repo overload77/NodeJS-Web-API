@@ -39,7 +39,7 @@ npm install
 node index.js 
 ```
 
-With that, application is ready to accept requests at ```localhost:3000```
+With that, application should be ready to accept requests at ```localhost:3000```
 
 
 
